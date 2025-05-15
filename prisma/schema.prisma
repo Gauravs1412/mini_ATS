@@ -1,0 +1,54 @@
+// This is your Prisma schema file
+// Learn more at https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id           String        @id @default(uuid())
+  title        String        @db.VarChar(255)
+  description  String
+  location     String        @db.VarChar(255)
+  salaryRange  String
+  createdAt    DateTime      @default(now())
+  applications Application[]
+
+  @@index([title])
+  @@index([location])
+}
+
+model Candidate {
+  id           Int           @id @default(autoincrement())
+  fullName     String
+  email        String        @unique
+  phone        String
+  resumeUrl    String
+  applications Application[]
+}
+
+model Application {
+  id          Int               @id @default(autoincrement())
+  candidate   Candidate         @relation(fields: [candidateId], references: [id])
+  candidateId Int
+  job         Job               @relation(fields: [jobId], references: [id])
+  jobId       String
+  status      ApplicationStatus @default(Applied)
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+enum ApplicationStatus {
+  Applied
+  Shortlisted
+  Interviewing
+  Offer
+  Hired
+  Rejected
+}
